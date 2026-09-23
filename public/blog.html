@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html><head><title>Blog Details</title><style>body{font-family:Arial; padding:20px}</style></head><body>
+<a href="/">← Back to all blogs</a>
+<div id="blog">Loading...</div>
+<script>
+const id = new URLSearchParams(window.location.search).get('id');
+fetch(`/api/blogs/${id}`).then(r=>r.json()).then(b=>{
+  document.getElementById('blog').innerHTML = `<h1>${b.title}</h1><p><b>Author:</b> ${b.author} | <b>Category:</b> ${b.category}</p><p>${b.content}</p>`;
+});
+</script>
+</body></html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html><head><title>All Blogs - Module 3</title>
+<style>body{font-family:Arial; padding:20px} .card{border:1px solid #ccc; padding:15px; margin:10px 0; border-radius:8px}</style>
+</head><body>
+<h1>Module 3 - All Blogs from Database</h1>
+<div id="blogs">Loading...</div>
+<script>
+fetch('/api/blogs')
+.then(res=>res.json())
+.then(data=>{
+  if(!data.length){ document.getElementById('blogs').innerHTML="No blogs found, POST a blog first"; return; }
+  document.getElementById('blogs').innerHTML = data.map(b=>`
+    <div class="card">
+      <h3>${b.title}</h3>
+      <p>${b.content.substring(0,100)}...</p>
+      <p><b>Author:</b> ${b.author}</p>
+      <a href="blog.html?id=${b._id}">View Details</a>
+    </div>
+  `).join('');
+});
+</script>
+</body></html>
