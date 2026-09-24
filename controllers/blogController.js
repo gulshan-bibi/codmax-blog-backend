@@ -1,23 +1,37 @@
-const Blog = require('../models/Blog');
+import Blog from "../models/Blog.js";
 
-exports.getAllBlogs = async (req, res) => {
+// CREATE
+export const createBlog = async (req,res) => {
+  try { const blog = await Blog.create(req.body); res.status(201).json(blog); }
+  catch(err){ res.status(400).json({error: err.message}); }
+};
+
+// READ ALL + SEARCH + FILTER - Optional Task bhi complete
+export const getBlogs = async (req,res) => {
   try {
-    const blogs = await Blog.find().sort({ createdAt: -1 });
+    const {search, category} = req.query;
+    let query = {};
+    if(search) query.title = {$regex: search, $options: "i"};
+    if(category && category !== "All") query.category = category;
+    const blogs = await Blog.find(query).sort({createdAt: -1});
     res.json(blogs);
-  } catch(e){ res.status(500).json({message:e.message}) }
+  } catch(err){ res.status(500).json({error: err.message}); }
 };
 
-exports.getSingleBlog = async (req, res) => {
-  try {
-    const blog = await Blog.findById(req.params.id);
-    if(!blog) return res.status(404).json({message: "Not found"});
-    res.json(blog);
-  } catch(e){ res.status(500).json({message:e.message}) }
+// READ ONE
+export const getBlogById = async (req,res) => {
+  const blog = await Blog.findById(req.params.id);
+  res.json(blog);
 };
 
-exports.createBlog = async (req, res) => {
-  try {
-    const blog = await Blog.create(req.body);
-    res.status(201).json(blog);
-  } catch(e){ res.status(500).json({message:e.message}) }
+// UPDATE
+export const updateBlog = async (req,res) => {
+  const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, {new:true});
+  res.json(blog);
+};
+
+// DELETE
+export const deleteBlog = async (req,res) => {
+  await Blog.findByIdAndDelete(req.params.id);
+  res.json({message: "Deleted"});
 };

@@ -1,22 +1,57 @@
 <!DOCTYPE html>
-<html><head><title>All Blogs - Module 3</title>
-<style>body{font-family:Arial; padding:20px} .card{border:1px solid #ccc; padding:15px; margin:10px 0; border-radius:8px}</style>
-</head><body>
-<h1>Module 3 - All Blogs from Database</h1>
-<div id="blogs">Loading...</div>
+<html>
+<head><title>Blog - Module 4</title>
+<style>body{font-family:sans-serif;background:#f6f8ff} .card{background:white;padding:15px;margin:10px;border-radius:10px} button{margin:5px;padding:8px 12px;border:none;border-radius:6px;cursor:pointer} .del{background:#fecaca} .edit{background:#dbeafe}</style>
+</head>
+<body>
+<h2>Codmax Blog - CRUD + Search Filter - Gulshan Bibi</h2>
+<input id="search" placeholder="Search Blogs..." onkeyup="loadBlogs()">
+<select id="catFilter" onchange="loadBlogs()"><option value="All">All</option><option>Technology</option><option>Design</option></select>
+
+<div>
+<input id="title" placeholder="Title">
+<textarea id="content" placeholder="Content"></textarea>
+<select id="category"><option>Technology</option><option>Design</option><option>Marketing</option></select>
+<input type="hidden" id="editId">
+<button onclick="saveBlog()" id="btn">Create Blog</button>
+</div>
+
+<div id="list"></div>
+
 <script>
-fetch('/api/blogs')
-.then(res=>res.json())
-.then(data=>{
-  if(!data.length){ document.getElementById('blogs').innerHTML="No blogs found, POST a blog first"; return; }
-  document.getElementById('blogs').innerHTML = data.map(b=>`
+const API = "/api/blogs";
+async function loadBlogs(){
+  const s = document.getElementById('search').value;
+  const c = document.getElementById('catFilter').value;
+  const res = await fetch(`${API}?search=${s}&category=${c}`);
+  const blogs = await res.json();
+  document.getElementById('list').innerHTML = blogs.map(b=> `
     <div class="card">
-      <h3>${b.title}</h3>
-      <p>${b.content.substring(0,100)}...</p>
-      <p><b>Author:</b> ${b.author}</p>
-      <a href="blog.html?id=${b._id}">View Details</a>
+      <h3>${b.title}</h3><small>${b.category}</small><p>${b.content}</p>
+      <button class="edit" onclick="edit('${b._id}')">Update</button>
+      <button class="del" onclick="delBlog('${b._id}')">Delete</button>
+      <a href="blog.html?id=${b._id}">View</a>
     </div>
   `).join('');
-});
+}
+async function saveBlog(){
+  const id = document.getElementById('editId').value;
+  const data = {title: title.value, content: content.value, category: category.value};
+  const method = id ? "PUT" : "POST";
+  const url = id ? `${API}/${id}` : API;
+  await fetch(url, {method, headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)});
+  editId.value=""; title.value=""; content.value=""; btn.innerText="Create Blog";
+  loadBlogs();
+}
+async function edit(id){
+  const res = await fetch(`${API}/${id}`); const b = await res.json();
+  editId.value=b._id; title.value=b.title; content.value=b.content; category.value=b.category;
+  btn.innerText="Update Blog"; window.scrollTo(0,0);
+}
+async function delBlog(id){
+  if(confirm("Delete?")){ await fetch(`${API}/${id}`, {method:"DELETE"}); loadBlogs(); }
+}
+loadBlogs();
 </script>
-</body></html>
+</body>
+</html>
